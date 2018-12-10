@@ -48,6 +48,7 @@ import tf2_ros
 from geometry_msgs.msg import Twist, TransformStamped, PoseStamped
 from nav_msgs.msg import Path
 from std_msgs.msg import Float64
+from teb_local_planner.msg import FeedbackMsg
 # from summit_xl_a_msgs.srv import *
 
 
@@ -63,7 +64,7 @@ class SetpointBroadcaster(object):
         self.br = tf2_ros.TransformBroadcaster()
         # using Topic AND Service for handling single and looping pose change
         # self.service = rospy.Service('/agv_mecanum/setpoint_pose', SetPose, self.handle_service)
-        self.sub_sp = rospy.Subscriber("/move_base/TebLocalPlannerROS/local_plan", Path, self.callbackSetpoint)
+        self.sub_sp = rospy.Subscriber("/move_base/TebLocalPlannerROS/teb_feedback", Path, self.callbackSetpoint)
         self.sub_sp_transform = rospy.Subscriber("/agv_mecanum/sp_pose", PoseStamped, self.callbackSetpointTransform)
         self.pub_sp = rospy.Publisher("/agv_mecanum/sp_pose", PoseStamped, queue_size=100)
 
@@ -92,14 +93,14 @@ class SetpointBroadcaster(object):
         time.sleep(0.5)
 
     def callbackSetpoint(self, msg):
-        for i in msg.poses: 
-            self.setpoint.pose.position.x = i.pose.position.x
-            self.setpoint.pose.position.y = i.pose.position.y
-            self.setpoint.pose.position.z = i.pose.position.z
-            self.setpoint.pose.orientation.x = i.pose.orientation.x
-            self.setpoint.pose.orientation.y = i.pose.orientation.y
-            self.setpoint.pose.orientation.z = i.pose.orientation.z
-            self.setpoint.pose.orientation.w = i.pose.orientation.w
+        for i in msg.trajectories: 
+            self.setpoint.pose.position.x = i.trajectory.pose.position.x
+            self.setpoint.pose.position.y = i.trajectory.pose.position.y
+            self.setpoint.pose.position.z = i.trajectory.pose.position.z
+            self.setpoint.pose.orientation.x = i.trajectory.pose.orientation.x
+            self.setpoint.pose.orientation.y = i.trajectory.pose.orientation.y
+            self.setpoint.pose.orientation.z = i.trajectory.pose.orientation.z
+            self.setpoint.pose.orientation.w = i.trajectory.pose.orientation.w
             self.pub_sp.publish(self.setpoint)
             
     def callbackSetpointTransform(self, msg):
