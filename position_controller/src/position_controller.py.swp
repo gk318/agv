@@ -76,8 +76,7 @@ class PositionController(object):
         self.pub_pid_x_setpoint = rospy.Publisher("/agv_mecanum/pid_x/setpoint", Float64, queue_size=1)
         self.pub_pid_y_setpoint = rospy.Publisher("/agv_mecanum/pid_y/setpoint", Float64, queue_size=1)
         self.pub_pid_yaw_setpoint = rospy.Publisher("/agv_mecanum/pid_yaw/setpoint", Float64, queue_size=1)
-        #self.pub_cmd = rospy.Publisher("/agv_mechanum/cmd_vel", Twist, queue_size=10)
-	self.pub_cmd = rospy.Publisher("/cmd_vel", Twist, queue_size=100)
+        self.pub_cmd = rospy.Publisher("/agv_mechanum/cmd_vel", Twist, queue_size=100)
 
         self.cmd = Twist()
         self.pos_x = .0
@@ -182,17 +181,19 @@ class PositionController(object):
                 self.pub_pid_y_state.publish(self.pos_y)
                 self.pub_pid_yaw_state.publish(self.yaw)
 
-                if not self.atSetpointYaw():
+		
+                if not self.atSetpointPos():
+                    self.cmd.linear.x = self.control_effort_x.data
+                    self.cmd.linear.y = self.control_effort_y.data
+                    self.cmd.angular.z = self.control_effort_yaw.data
+                    self.pub_cmd.publish(self.cmd)
+
+                elif not self.atSetpointYaw():
                     self.cmd.linear.x = 0
                     self.cmd.linear.y = 0
                     self.cmd.angular.z = self.control_effort_yaw.data 
                     self.pub_cmd.publish(self.cmd)
 
-                elif not self.atSetpointPos():
-                    self.cmd.linear.x = self.control_effort_x.data
-                    self.cmd.linear.y = self.control_effort_y.data
-                    self.cmd.angular.z = self.control_effort_yaw.data
-                    self.pub_cmd.publish(self.cmd)
 
                 else:
                     self.cmd.linear.x = 0
