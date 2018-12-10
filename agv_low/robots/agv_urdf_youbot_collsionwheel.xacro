@@ -83,7 +83,7 @@
 
    	</xacro:macro>
    
-   <!-- Gazebo ros control pluggins -->
+   <!-- Gazebo ros control plugins -->
 
 <!--    <xacro:ros_control />  -->
 	
@@ -98,6 +98,21 @@
 
    
    <!--<xacro:xtion_stand parent="agv_base_link" tilting_angle="0" /> -->
+
+
+   <!-- Gazebo ground truth odom plugin -->
+	<gazebo>
+	  <plugin name="p3d_base_controller" filename="libgazebo_ros_p3d.so">
+	    <alwaysOn>true</alwaysOn>
+	    <updateRate>25.0</updateRate>   <!-- 50 Hz -->
+	    <bodyName>agv_base_link</bodyName>
+	    <topicName>/agv_mecanum/ground_truth/state</topicName>
+	    <gaussianNoise>0.01</gaussianNoise>
+	    <frameName>map</frameName>
+	    <xyzOffset>0 0 0</xyzOffset>
+	    <rpyOffset>0 0 0</rpyOffset>
+	  </plugin>
+	</gazebo>
 
 
 </robot>
