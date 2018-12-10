@@ -47,6 +47,7 @@ import tf2_ros
 
 # Messages
 from geometry_msgs.msg import Twist, TransformStamped, PoseStamped
+from nav_msgs.msg import Path
 from std_msgs.msg import Float64, Bool
 
 # Services
@@ -63,7 +64,7 @@ class PositionController(object):
 
         self.tfBuffer = tf2_ros.Buffer()
         self.listener = tf2_ros.TransformListener(self.tfBuffer)
-        self.service = rospy.Service('/agv_mecanum/enable_pos_ctrl', SetBool, self.handle_service)
+        #self.service = rospy.Service('/agv_mecanum/enable_pos_ctrl', SetBool, self.handle_service)
         self.activator_x = rospy.Publisher("/agv_mecanum/pid_x/pid_enable", Bool, queue_size=1)
         self.activator_y = rospy.Publisher("/agv_mecanum/pid_y/pid_enable", Bool, queue_size=1)
         self.activator_yaw = rospy.Publisher("/agv_mecanum/pid_yaw/pid_enable", Bool, queue_size=1)
@@ -76,8 +77,9 @@ class PositionController(object):
         self.pub_pid_x_setpoint = rospy.Publisher("/agv_mecanum/pid_x/setpoint", Float64, queue_size=1)
         self.pub_pid_y_setpoint = rospy.Publisher("/agv_mecanum/pid_y/setpoint", Float64, queue_size=1)
         self.pub_pid_yaw_setpoint = rospy.Publisher("/agv_mecanum/pid_yaw/setpoint", Float64, queue_size=1)
-        #self.pub_cmd = rospy.Publisher("/agv_mechanum/cmd_vel", Twist, queue_size=10)
-	self.pub_cmd = rospy.Publisher("/cmd_vel", Twist, queue_size=100)
+        self.pub_cmd = rospy.Publisher("/agv_mechanum/cmd_vel", Twist, queue_size=100)
+        self.sub_sp = rospy.Subscriber("/move_base/TebLocalPlannerROS/local_plan", Path, self.callbackSetpoint)
+	#self.pub_cmd = rospy.Publisher("/cmd_vel", Twist, queue_size=100)
 
         self.cmd = Twist()
         self.pos_x = .0
@@ -97,19 +99,54 @@ class PositionController(object):
         self.control_effort_y = Float64()
         self.control_effort_yaw = Float64()
 
+        self.path = Path()
+        self.i = 0
+
+        self.t = TransformStamped()
+        self.t.header.frame_id = "odom"
+        #self.t.header.frame_id = "agv_base_footprint"
+        self.t.child_frame_id = "setpoint_pose"
+        self.t.transform.translation.x = 0
+        self.t.transform.translation.y = 0
+        self.t.transform.translation.z = 0
+        self.t.transform.rotation.x = 0
+        self.t.transform.rotation.y = 0
+        self.t.transform.rotation.z = 0
+        self.t.transform.rotation.w = 1
+
+        self.br = tf2_ros.TransformBroadcaster()
+
+
         self.pid_enabled = True
+        self.planner_enabled = False
 
         rospy.on_shutdown(self.cleanup)
 
         rospy.loginfo("Start position controller.")
+
+    def callbackSetpoint(self, msg):
+        self.path = msg
+        self.planner_enabled = True
 
 
     def cleanup(self):
         '''
         @brief destructor
         '''
-        self.handle_service(False)
+        #self.handle_service(False)
         rospy.loginfo("Stop position controller")
+
+    def setpointTransform(self, msg):
+        self.t.transform.translation.x = msg.pose.position.x
+        self.t.transform.translation.y = msg.pose.position.y
+        self.t.transform.translation.z = msg.pose.position.z
+        self.t.transform.rotation.x = msg.pose.orientation.x
+        self.t.transform.rotation.y = msg.pose.orientation.y
+        self.t.transform.rotation.z = msg.pose.orientation.z
+        self.t.transform.rotation.w = msg.pose.orientation.w
+        self.t.header.stamp = rospy.Time.now()
+        self.br.sendTransform(self.t)
+
 
 
     def lookupTransform(self, parent, child):
@@ -156,50 +193,59 @@ class PositionController(object):
         '''
         @brief 
         '''
-        if self.pid_enabled:
-            setpoint = False
-            trans = False
-            
-            setpoint = self.lookupTransform("agv_base_footprint", "setpoint_pose")
-            trans = self.lookupTransform("setpoint_pose", "agv_base_footprint")
-            
-            if setpoint and trans:
-                #setpoint
-                
-                self.pub_pid_x_setpoint.publish(0)
-                self.pub_pid_y_setpoint.publish(0)
-                self.pub_pid_yaw_setpoint.publish(0)
+        if self.pid_enabled and self.planner_enabled:
+		if self.i < len(self.path.poses):
+			pose = self.path.poses[self.i]
+			self.setpointTransform(pose)
+			
+			setpoint = False
+			trans = False
+		    
+		        setpoint = self.lookupTransform("agv_base_footprint", "setpoint_pose")
+		        trans = self.lookupTransform("setpoint_pose", "agv_base_footprint")
 
-                #trans
-                
-                self.pos_x = trans.transform.translation.x
-                self.pos_y = trans.transform.translation.y
-                quat = [trans.transform.rotation.x, trans.transform.rotation.y, 
-                        trans.transform.rotation.z, trans.transform.rotation.w]
-                euler = tf.transformations.euler_from_quaternion(quat)
-                self.yaw = euler[2]
-                self.pub_pid_x_state.publish(self.pos_x)
-                self.pub_pid_y_state.publish(self.pos_y)
-                self.pub_pid_yaw_state.publish(self.yaw)
+		    
+		        if setpoint and trans:
+			    #setpoint
+			
+			    self.pub_pid_x_setpoint.publish(0)
+			    self.pub_pid_y_setpoint.publish(0)
+			    self.pub_pid_yaw_setpoint.publish(0)
 
-                if not self.atSetpointYaw():
-                    self.cmd.linear.x = 0
-                    self.cmd.linear.y = 0
-                    self.cmd.angular.z = self.control_effort_yaw.data 
-                    self.pub_cmd.publish(self.cmd)
+			    #trans
+			
+			    self.pos_x = trans.transform.translation.x
+			    self.pos_y = trans.transform.translation.y
+			    quat = [trans.transform.rotation.x, trans.transform.rotation.y, 
+				    trans.transform.rotation.z, trans.transform.rotation.w]
+			    euler = tf.transformations.euler_from_quaternion(quat)
+			    self.yaw = euler[2]
+			    self.pub_pid_x_state.publish(self.pos_x)
+			    self.pub_pid_y_state.publish(self.pos_y)
+			    self.pub_pid_yaw_state.publish(self.yaw)
 
-                elif not self.atSetpointPos():
-                    self.cmd.linear.x = self.control_effort_x.data
-                    self.cmd.linear.y = self.control_effort_y.data
-                    self.cmd.angular.z = self.control_effort_yaw.data
-                    self.pub_cmd.publish(self.cmd)
+			    if not self.atSetpointYaw():
+			        self.cmd.linear.x = 0
+			        self.cmd.linear.y = 0
+			        self.cmd.angular.z = self.control_effort_yaw.data 
+			        self.pub_cmd.publish(self.cmd)
 
-                else:
-                    self.cmd.linear.x = 0
-                    self.cmd.linear.y = 0
-                    self.cmd.angular.z = 0
-                    #self.pid_enabled = False 
-                    self.pub_cmd.publish(self.cmd)
+			    elif not self.atSetpointPos():
+			        self.cmd.linear.x = self.control_effort_x.data
+			        self.cmd.linear.y = self.control_effort_y.data
+			        self.cmd.angular.z = self.control_effort_yaw.data
+			        self.pub_cmd.publish(self.cmd)
+
+			    else:
+			        self.i += 1
+
+		else:
+			self.cmd.linear.x = 0
+		        self.cmd.linear.y = 0
+		        self.cmd.angular.z = 0
+			self.planner_enabled = False
+		        #self.pid_enabled = False 
+		        self.pub_cmd.publish(self.cmd)
 
     def callback_x(self, msg):
         self.control_effort_x = msg
@@ -210,25 +256,25 @@ class PositionController(object):
     def callback_yaw(self, msg):
         self.control_effort_yaw = msg
 
-    def handle_service(self, req):
-        rate = rospy.Rate(25)
+    #def handle_service(self, req):
+     #   rate = rospy.Rate(25)
         #check if flag is toggled
-        if req.data != self.pid_enabled:
+      #  if req.data != self.pid_enabled:
             # toggle PID controller to prevent integration
             # dirtyfix: for loop secures connection between sub and pub
-            for i in range(1, 5):
-                self.activator_x.publish(req.data)
-                self.activator_y.publish(req.data)
-                self.activator_yaw.publish(req.data)
-                rate.sleep()
+       #     for i in range(1, 5):
+        #        self.activator_x.publish(req.data)
+         #       self.activator_y.publish(req.data)
+          #      self.activator_yaw.publish(req.data)
+           #     rate.sleep()
             # set controll effort equal zero
-            self.cmd.linear.x = 0
-            self.cmd.linear.y = 0
-            self.cmd.angular.z = 0
-            self.pub_cmd.publish(self.cmd)
-            self.pid_enabled = req.data
-            return SetBoolResponse(True, "Positioncontroller set to {}".format(req.data))
-        return SetBoolResponse(True, "Positioncontroller was set to {}".format(req.data))
+            #self.cmd.linear.x = 0
+            #self.cmd.linear.y = 0
+            #self.cmd.angular.z = 0
+            #self.pub_cmd.publish(self.cmd)
+            #self.pid_enabled = req.data
+            #return SetBoolResponse(True, "Positioncontroller set to {}".format(req.data))
+        #return SetBoolResponse(True, "Positioncontroller was set to {}".format(req.data))
 
 
 if __name__ == "__main__":

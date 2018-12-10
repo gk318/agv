@@ -14,8 +14,8 @@
       <param name="min_loop_frequency" value="15.0" />
      </node>
     <node name="controller" pkg="pid" type="controller" ns="/agv_mecanum/pid_y" output="screen" >
-      <param name="Kp" value="0.08" />     <!--3.0, 1.35, 0.032-->
-      <param name="Ki" value="0.005" />    
+      <param name="Kp" value="0.08" />     <!--0.008, 0.005, 0.05-->
+      <param name="Ki" value="0.05" />    
       <param name="Kd" value="0.05" />     
       <param name="upper_limit" value="0.5" />
       <param name="lower_limit" value="-0.5" />
@@ -49,7 +49,7 @@
       <param name="max_loop_frequency" value="50.0" />
       <param name="min_loop_frequency" value="15.0" />
      </node>
-    <node pkg="position_controller" type="setpoint_broadcaster.py" name="setpoint_broadcaster" output="screen"/>
+    <!-- node pkg="position_controller" type="setpoint_broadcaster.py" name="setpoint_broadcaster" output="screen"/-->
     <!-- node pkg="position_controller" type="trajectory_planner.py" name="trajectory_planner" output="screen"/ -->
     <node pkg="position_controller" type="position_controller.py" name="position_controller" output="screen"/>
 </launch>
