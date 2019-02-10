@@ -65,9 +65,10 @@ if __name__ == "__main__":
 
         tp = trajectoryPlanner(rospy.get_name())
         rate = rospy.Rate(args.rate)
-        square = [[3.0,0.0,0.0],[3.0,0.0,90.0],[3.0,3.0,90.0],[3.0,3.0,180.0]]
+        square = [[4.0,0.0,0.0],[4.0,0.0,90.0],[4.0,2.0,90.0],[4.0,2.0,180.0], [0.0,2.0,180.0],[0.0, 2.0, 270.0], [0.0,0.0,270.0], [0.0, 0.0, 360.0]]
+	triangle = [[0.0,0.0,135.0],[3.0,3.0,135.0], [3.0,3.0,180.0],[0.0,3.0,180.0],[0.0,3.0,270.0],[0.0,0.0,270.0],[0.0,0.0,0.0]]
         abstract = [[0.0,0.0,0.0],[1.0,0.0,0.0],[1.0,0.0,90.0],[1.0,3.0,90.0],[1.0,3.0,0.0],[1.5,3.0,0.0],[1.0,3.0,90.0],[1.0,3.0,90.0],[1.0,3.0,90.0]]
-        for list_item in square:
+        for list_item in triangle:
             tp.poseFromListItem(list_item)
         while not rospy.is_shutdown():
             tp.pub_sp.publish(tp.plan)
@@ -76,3 +77,4 @@ if __name__ == "__main__":
     except rospy.ROSInterruptException:
         pass
     rospy.spin()
+
