@@ -13,7 +13,7 @@
 
 <param name="use_sim_time" value="true" />
 
-<arg name="map" value="agv_model.yaml" />
+<arg name="map" value="industrial_shop_floor.yaml" />
 
 <node name="map_server" pkg="map_server" type="map_server" args="$(find rover_navigation)/maps/$(arg map)">
     <param name="frame_id" value="map"/>
@@ -24,7 +24,7 @@
 </node-->
 
 <node pkg="amcl" type="amcl" name="amcl" output="screen">
-      <remap from="scan" to="/front_laser/scan"/>
+      <remap from="scan" to="/scan_multi"/>
       <param name="TrajectoryPlannerROS/map_frame" value="map"/>
       <param name="odom_frame_id" value="odom"/>
       <param name="base_frame_id" value="agv_base_footprint"/>

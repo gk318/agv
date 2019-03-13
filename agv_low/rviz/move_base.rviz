@@ -219,7 +219,7 @@ Visualization Manager:
       Size (Pixels): 3
       Size (m): 0.100000001
       Style: Flat Squares
-      Topic: /front_laser/scan
+      Topic: /scan_multi
       Unreliable: false
       Use Fixed Frame: true
       Use rainbow: true
@@ -465,26 +465,21 @@ Visualization Manager:
   Value: true
   Views:
     Current:
-      Class: rviz/XYOrbit
-      Distance: 8.74617386
+      Angle: 0
+      Class: rviz/TopDownOrtho
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.0599999987
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
-      Focal Point:
-        X: 0
-        Y: 0
-        Z: 0
-      Focal Shape Fixed Size: true
-      Focal Shape Size: 0.0500000007
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.00999999978
-      Pitch: -0.0196019225
+      Scale: 10
       Target Frame: <Fixed Frame>
-      Value: XYOrbit (rviz)
-      Yaw: 0.65539819
+      Value: TopDownOrtho (rviz)
+      X: 6.95986319
+      Y: 5.3504467
     Saved:
       - Class: rviz/Orbit
         Distance: 0.0144236851

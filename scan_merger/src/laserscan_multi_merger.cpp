@@ -137,7 +137,7 @@ LaserscanMerger::LaserscanMerger()
 	point_cloud_publisher_ = node_.advertise<sensor_msgs::PointCloud2> (cloud_destination_topic.c_str(), 1, false);
 	laser_scan_publisher_ = node_.advertise<sensor_msgs::LaserScan> (scan_destination_topic.c_str(), 1, false);
 
-	tfListener_.setExtrapolationLimit(ros::Duration(0.1));
+	//tfListener_.setExtrapolationLimit(ros::Duration(0.1));
 }
 
 void LaserscanMerger::scanCallback(const sensor_msgs::LaserScan::ConstPtr& scan, std::string topic)
@@ -239,13 +239,13 @@ void LaserscanMerger::pointcloud_to_laserscan(Eigen::MatrixXf points, pcl::PCLPo
 		if (output->ranges[index] * output->ranges[index] > range_sq)
 			output->ranges[index] = sqrt(range_sq);
 	}
-
 	laser_scan_publisher_.publish(output);
 }
 
 int main(int argc, char** argv)
 {
 	ros::init(argc, argv, "laser_multi_merger");
+    printf("I am here");
 
     LaserscanMerger _laser_merger;
 

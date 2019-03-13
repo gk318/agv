@@ -11,7 +11,7 @@
 	<!-- Import summit XL base elements -->
 	<xacro:include filename="$(find agv_low)/urdf/bases/agv_low_base_urdf.xacro" />
 
-	<xacro:include filename="$(find agv_low)/urdf/bases/agv_low_base_gazebo_urdf.xacro" />
+<!--	<xacro:include filename="$(find agv_low)/urdf/bases/agv_low_base_gazebo_urdf.xacro" /> -->
   
 	<!-- Import summit XL wheels collision -->
 	<xacro:include filename="$(find agv_low)/urdf/wheels/agv_low_wheel_urdf_youbot_collision.xacro" />
@@ -48,10 +48,10 @@
   		<xacro:mecanum_wheel_youbot_collision prefix="${prefix}back_left" angle="-1" parent="${prefix}base_link" />
   		<xacro:mecanum_wheel_youbot_collision prefix="${prefix}back_right" angle="1" parent="${prefix}base_link" />
 
-		<xacro:mecanum_wheel_visual prefix="${prefix}front_left" angle="-1" wheel_pos="0" parent="${prefix}base_link" />
-  		<xacro:mecanum_wheel_visual prefix="${prefix}front_right" angle="1" wheel_pos="1" parent="${prefix}base_link" />
-  		<xacro:mecanum_wheel_visual prefix="${prefix}back_left" angle="-1" wheel_pos="1" parent="${prefix}base_link" />
-  		<xacro:mecanum_wheel_visual prefix="${prefix}back_right" angle="1" wheel_pos="0" parent="${prefix}base_link" />
+		<xacro:mecanum_wheel_visual prefix="${prefix}front_left" angle="-1" wheel_pos="1" parent="${prefix}base_link" />
+  		<xacro:mecanum_wheel_visual prefix="${prefix}front_right" angle="1" wheel_pos="0" parent="${prefix}base_link" />
+  		<xacro:mecanum_wheel_visual prefix="${prefix}back_left" angle="-1" wheel_pos="0" parent="${prefix}base_link" />
+  		<xacro:mecanum_wheel_visual prefix="${prefix}back_right" angle="1" wheel_pos="1" parent="${prefix}base_link" />
 
 		<!-- Gazebo ros control pluggins -->
 
@@ -83,36 +83,19 @@
 
    	</xacro:macro>
    
-   <!-- Gazebo ros control plugins -->
+   <!-- Gazebo ros control pluggins -->
 
-<!--    <xacro:ros_control />  -->
+   <!-- <xacro:ros_control /> -->
 	
    <!-- <xacro:ros_force_based_move prefix="$(arg prefix)"/> -->
 <!--   <xacro:planar_move prefix="$(arg prefix)"/> -->
 
    <xacro:fourwheel_visual_diff_drive prefix="$(arg prefix)"/>
 
-
-
    <xacro:agv prefix="$(arg prefix)"/>
 
    
    <!--<xacro:xtion_stand parent="agv_base_link" tilting_angle="0" /> -->
-
-
-   <!-- Gazebo ground truth odom plugin -->
-	<gazebo>
-	  <plugin name="p3d_base_controller" filename="libgazebo_ros_p3d.so">
-	    <alwaysOn>true</alwaysOn>
-	    <updateRate>25.0</updateRate>   <!-- 50 Hz -->
-	    <bodyName>agv_base_link</bodyName>
-	    <topicName>/agv_mecanum/ground_truth/state</topicName>
-	    <gaussianNoise>0.01</gaussianNoise>
-	    <frameName>map</frameName>
-	    <xyzOffset>0 0 0</xyzOffset>
-	    <rpyOffset>0 0 0</rpyOffset>
-	  </plugin>
-	</gazebo>
 
 
 </robot>
