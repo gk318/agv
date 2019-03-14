@@ -10,7 +10,7 @@
 	<param name="odom_frame" value="odom" />    
 		 
 	<!-- Topic names -->    
-	<param name="scan_topic" value="front_laser/scan" />          
+	<param name="scan_topic" value="scan_multi" />          
 	 
 	<!-- Tf use -->    
 	<param name="use_tf_scan_transformation" value="true"/>    
