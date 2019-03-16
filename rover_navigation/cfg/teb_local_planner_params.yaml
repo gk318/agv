@@ -1,6 +1,8 @@
 TebLocalPlannerROS:
 
  odom_topic: odom
+
+ map_frame: /map
     
  # Trajectory
   
@@ -37,20 +39,51 @@ TebLocalPlannerROS:
   
 
  # ********************** Carlike robot parameters ********************
- min_turning_radius: 0.5        # Min turning radius of the carlike robot (compute value using a model or adjust with rqt_reconfigure manually)
- wheelbase: 0.72                 # Wheelbase of our robot // TODO: set to negative value!
- cmd_angle_instead_rotvel: False # stage simulator takes the angle instead of the rotvel as input (twist message)
+# min_turning_radius: 0.5        # Min turning radius of the carlike robot (compute value using a model or adjust with rqt_reconfigure manually)
+# wheelbase: 0.72                 # Wheelbase of our robot // TODO: set to negative value!
+# cmd_angle_instead_rotvel: False # stage simulator takes the angle instead of the rotvel as input (twist message)
  # ********************************************************************
 
  footprint_model: # types: "point", "circular", "two_circles", "line", "polygon"
    type: "line"
-   radius: 0.2 # for type "circular"
    line_start: [0.0, 0.3815] # for type "line" agv params
    line_end: [0.0, -0.3815] # for type "line"  agv params
 
 
  # GoalTolerance
     
- xy_goal_tolerance: 0.3
+ xy_goal_tolerance: 0.1
  yaw_goal_tolerance: 0.1
  free_goal_vel: False
+
+ #Obstacle parameters
+ min_obstacle_dist: 0.7  # default value was 0.5, changed to 0.7 based on footprint
+ include_costmap_obstacles: true
+ obstacle_poses_affected : 30
+ inflation_dist: 0.6
+
+ #Optimization parameters
+ no_inner_iterations: 5
+ no_outer_iterations: 4
+ penalty_epsilon: 0.1
+ weight_max_vel_x: 2.0
+ weight_max_vel_theta: 1.0
+ weight_acc_lim_x: 1.0
+ weight_acc_lim_theta: 1.0
+ weight_optimaltime: 1.0
+ weight_obstacle: 50.0
+ weight_inflation: 0.1
+
+ #Parallel Planning
+ enable_homotopy_class_planning: true
+ enable_multithreading: true
+ max_number_classes: 4
+ selection_cost_hysteresis: 1.0
+ selection_obst_cost_scale: 100.0
+ selection_alternative_time_cost: false
+ roadmap_graph_no_samples: 15
+ roadmap_graph_area_width: 6
+ h_signature_prescaler: 1.0
+ h_signature_threshold: 0.1
+ obstacle_heading_threshold: 1.0
+ visualize_hc_graph: false

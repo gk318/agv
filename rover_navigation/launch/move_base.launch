@@ -25,10 +25,11 @@
 
 <node pkg="amcl" type="amcl" name="amcl" output="screen">
       <remap from="scan" to="scan_multi"/>
-      <param name="TrajectoryPlannerROS/map_frame" value="map"/>
-      <param name="odom_frame_id" value="odom"/>
-      <param name="base_frame_id" value="agv_base_footprint"/>
-      <param name="global_frame_id" value="map"/>
+      <!--<param name="TrajectoryPlannerROS/map_frame" value="map"/> -->
+      <!-- <param name="odom_frame_id" value="odom"/> -->
+      <!-- <param name="base_frame_id" value="agv_base_footprint"/> -->
+      <!-- <param name="global_frame_id" value="map"/> -->
+      <rosparam command="load" file="$(find rover_navigation)/cfg/amcl.yaml"/>
 </node>
 
 <node pkg="tf2_ros" type="static_transform_publisher" name="base_scan_transform" args="0 0 0 0 0 0 1 agv_base_link scan_merged"/>
