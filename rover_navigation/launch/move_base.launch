@@ -1,0 +1,39 @@
+<?xml version="1.0"?>
+<launch>
+<!-- ************** Navigation *************** -->
+<node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">
+<rosparam file="$(find rover_navigation)/cfg/costmap_common_params.yaml" command="load" ns="global_costmap" />
+<rosparam file="$(find rover_navigation)/cfg/costmap_common_params.yaml" command="load" ns="local_costmap" />
+<rosparam file="$(find rover_navigation)/cfg/local_costmap_params.yaml" command="load" />
+<rosparam file="$(find rover_navigation)/cfg/global_costmap_params.yaml" command="load" />
+<rosparam file="$(find rover_navigation)/cfg/teb_local_planner_params.yaml" command="load" />
+<!--rosparam file="$(find rover_navigation)/cfg/base_local_planner_params.yaml" command="load" / -->
+<rosparam file="$(find rover_navigation)/cfg/move_base_params.yaml" command="load" />
+</node>
+
+<param name="use_sim_time" value="true" />
+
+<arg name="map" value="industrial_shop_floor.yaml" />
+
+<node name="map_server" pkg="map_server" type="map_server" args="$(find rover_navigation)/maps/$(arg map)">
+    <param name="frame_id" value="map"/>
+</node>
+   
+<!--node name="fake_localization" pkg="fake_localization" type="fake_localization" output="screen">
+    <remap from="map" to="map"/>
+</node-->
+
+<node pkg="amcl" type="amcl" name="amcl" output="screen">
+      <remap from="scan" to="scan_multi"/>
+      <!--<param name="TrajectoryPlannerROS/map_frame" value="map"/> -->
+      <!-- <param name="odom_frame_id" value="odom"/> -->
+      <!-- <param name="base_frame_id" value="agv_base_footprint"/> -->
+      <!-- <param name="global_frame_id" value="map"/> -->
+      <rosparam command="load" file="$(find rover_navigation)/cfg/amcl.yaml"/>
+</node>
+
+<node pkg="tf2_ros" type="static_transform_publisher" name="base_scan_transform" args="0 0 0 0 0 0 1 agv_base_link scan_merged"/>
+
+<!--node type="rviz" name="agv_rviz" pkg="rviz" args ="-d $(find agv_low)/rviz/move_base.rviz" /-->
+
+</launch>
